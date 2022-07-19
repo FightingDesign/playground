@@ -2,14 +2,16 @@
 
 <template>
   <header class="header">
-    <div class="logo">
-      <f-avatar
-        round
-        size="mini"
-        src="https://tianyuhao.cn/fighting/imgs/FightingDesign.svg"
-      />
-      <span class="name">Fighting Design</span>
-    </div>
+    <f-link>
+      <div class="logo">
+        <f-avatar
+          round
+          size="mini"
+          src="https://tianyuhao.cn/fighting/imgs/FightingDesign.svg"
+        />
+        <span class="name">Fighting Design Playground</span>
+      </div>
+    </f-link>
 
     <ul class="option">
       <li class="option-item">
@@ -62,6 +64,7 @@
       cursor: pointer;
 
       .name {
+        height: 18px;
         margin-left: 10px;
         font-weight: bold;
         background: -webkit-linear-gradient(
