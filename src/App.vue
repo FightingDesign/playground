@@ -1,12 +1,47 @@
 <script lang="ts" setup>
-  import { Repl } from '@vue/repl'
+  import { Repl, ReplStore } from '@vue/repl'
   import '@vue/repl/style.css'
   import Header from './components/Header.vue'
+  import { watchEffect } from 'vue'
+
+  // retrieve some configuration options from the URL
+  const query = new URLSearchParams(location.search)
+
+  const store = new ReplStore({
+    // 使用以前序列化的状态初始化repl
+    serializedState: location.hash.slice(1),
+
+    // 如果URL具有showOutput查询，则从输出窗格（仅限移动设备）开始
+    showOutput: query.has('showOutput'),
+    // 如果URL具有outputMode查询，则从输出窗格的其他选项卡开始
+    // 并默认为“预览”选项卡
+    outputMode: query.get('outputMode') || 'preview',
+
+    // 在沙盒中指定要从中导入Vue运行时的默认URL
+    // 默认为unpkg的CDN链接。版本与Vue版本匹配的com
+    // 来自对等依赖
+    defaultVueRuntimeURL:
+      'https://cdn.jsdelivr.net/npm/fighting-design/dist/index.js'
+  })
+
+  // 将状态持久化到URL哈希
+  watchEffect(() => history.replaceState({}, '', store.serialize()))
+
+  // 预设导入映射
+  // store.setImportMap({
+  //   imports: {
+  //     myLib: 'cdn link to esm build of myLib'
+  //   }
+  // })
+
+  // 使用特定版本的Vue
+  store.setVueVersion('3.2.25')
+  // store.setVueVersion('3.2.8')
 </script>
 
 <template>
   <Header />
-  <Repl />
+  <Repl :store="store" :showCompileOutput="true" />
 </template>
 
 <style lang="scss">
