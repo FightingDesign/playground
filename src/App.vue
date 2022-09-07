@@ -1,7 +1,7 @@
 <script lang="ts" setup>
   import { Repl, ReplStore } from '@vue/repl'
   import '@vue/repl/style.css'
-  import Header from './components/Header.vue'
+  import HeaderVue from './components/Header.vue'
   import { watchEffect } from 'vue'
 
   // retrieve some configuration options from the URL
@@ -40,8 +40,8 @@
 </script>
 
 <template>
-  <Header />
-  <Repl :store="store" :showCompileOutput="true" />
+  <header-vue />
+  <repl :store="store" show-compile-output />
 </template>
 
 <style lang="scss">

@@ -7,7 +7,7 @@
         <f-avatar
           round
           size="mini"
-          src="https://tianyuhao.cn/fighting/imgs/FightingDesign.svg"
+          src="https://tianyuhao.cn/images/fighting-design/FightingDesign.svg"
         />
         <span class="name">Fighting Design Playground</span>
       </div>
