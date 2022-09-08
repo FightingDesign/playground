@@ -68,12 +68,56 @@
 //   });
 // }
 
+import { zlibSync, unzlibSync, strToU8, strFromU8 } from 'fflate'
+
 // prefer old unicode hacks for backward compatibility
 // https://base64.guru/developers/javascript/examples/unicode-strings
 export function utoa (data: string): string {
   return btoa(unescape(encodeURIComponent(data)))
 }
 
+const encodeSearchKey = function (key) {
+  const encodeArr = [{
+    code: '%',
+    encode: '%25'
+  }, {
+    code: '?',
+    encode: '%3F'
+  }, {
+    code: '#',
+    encode: '%23'
+  }, {
+    code: '&',
+    encode: '%26'
+  }, {
+    code: '=',
+    encode: '%3D'
+  }];
+  return key.replace(/[%?#&=]/g, ($, index, str) => {
+    for (const k of encodeArr) {
+      if (k.code === $) {
+        return k.encode;
+      }
+    }
+  });
+}
+
+// export function atou (base64: string): string {
+//   // return decodeURIComponent(escape(atob(base64)).replace(/%/g, '%25'))
+//   return decodeURIComponent(escape(atob(base64)))
+// }
+
 export function atou (base64: string): string {
-  return decodeURIComponent(escape(atob(base64)))
+  const binary = atob(base64)
+
+  // zlib header (x78), level 9 (xDA)
+  if (binary.startsWith('\x78\xDA')) {
+    const buffer = strToU8(binary, true)
+    const unzipped = unzlibSync(buffer)
+    return strFromU8(unzipped)
+  }
+
+  // old unicode hacks for backward compatibility
+  // https://base64.guru/developers/javascript/examples/unicode-strings
+  return decodeURIComponent(escape(binary))
 }

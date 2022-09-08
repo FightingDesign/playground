@@ -86,6 +86,9 @@ export class ReplStore implements Store {
 
     if (serializedState) {
       const saved = JSON.parse(atou(serializedState))
+      console.log(Object.keys(saved))
+      // console.log(JSON.parse(serializedState))
+      // debugger
       // eslint-disable-next-line no-restricted-syntax
       for (const filename of Object.keys(saved)) {
         files[filename] = new File(filename, saved[filename])
