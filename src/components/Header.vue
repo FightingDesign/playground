@@ -18,7 +18,7 @@
         <f-link
           href="https://fighting.tianyuhao.cn/"
           type="primary"
-          target="_back"
+          target="_blank"
         >
           官网
         </f-link>
@@ -27,7 +27,7 @@
         <f-link
           href="https://staging-cn.vuejs.org/"
           type="primary"
-          target="_back"
+          target="_blank"
         >
           Vue.js
         </f-link>
@@ -36,7 +36,7 @@
         <f-link
           href="https://github.com/FightingDesign/fighting-design-playground"
           type="primary"
-          target="_back"
+          target="_blank"
         >
           Github
         </f-link>
