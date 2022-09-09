@@ -1,46 +1,69 @@
-//store.ts
-
 import { reactive, watchEffect, version } from 'vue'
 import * as defaultCompiler from 'vue/compiler-sfc'
 import type { Store, SFCOptions, StoreState, OutputModes } from '@vue/repl'
 import { compileFile, File } from '@vue/repl'
-import { utoa, atou } from './utils'
-import {
-  defaultMainFile,
-  getVueRuntimeURL,
-  getVueCompilerURL,
-  getVantURL,
+import { utoa, atou } from '../_utils/utils'
 
-  vantInjectPlugin,
-  additionalImports,
-  additionalFiles,
-  defaultDeleteTips,
-  welcomeCode
-} from './config'
+const publicPath = 'https://cdn.jsdelivr.net/npm/fighting-design/'
 
-import { convertBugImportMapCdnUrl } from './helpers'
+const defaultMainFile = 'App.vue'
+const varletReplPlugin = 'fighting-design-plugin.js'
+const varletImports = {
+  'fighting-design': `${publicPath}es/index.mjs`
+}
+const varletCss = `${publicPath}dist/index.css`
 
-export interface StoreStateWithVantURL extends StoreState {
-  vantURL?: string
+const welcomeCode = `\
+<script setup lang='ts'>
+import { ref } from 'vue'
+import { installFightingDesign } from './${varletReplPlugin}'
+
+installFightingDesign()
+
+const msg = ref('Hello World！')
+</script>
+
+<template>
+  <h1>欢迎使用 Fighting Design！</h1>
+  <f-button type="primary">{{ msg }}</f-button>
+</template>
+`
+
+const varletReplPluginCode = `\
+import FightingDesign from 'fighting-design'
+
+import { getCurrentInstance } from 'vue'
+
+await appendStyle()
+
+export function installFightingDesign() {
+  const instance = getCurrentInstance()
+  instance.appContext.app.use(FightingDesign)
 }
 
+export function appendStyle() {
+  return new Promise((resolve, reject) => {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = '${varletCss}'
+    link.onload = resolve
+    link.onerror = reject
+    document.body.appendChild(link)
+  })
+}
+`
+
 export class ReplStore implements Store {
-  state: StoreStateWithVantURL
-
+  state: StoreState
   compiler = defaultCompiler
-
   options?: SFCOptions
-
   initialShowOutput: boolean
-
   initialOutputMode: OutputModes = 'preview'
-
   private readonly defaultVueRuntimeURL: string
-  private pendingCompiler: Promise<any> | null = null
 
   constructor ({
     serializedState = '',
-    defaultVueRuntimeURL = getVueRuntimeURL(version),
+    defaultVueRuntimeURL = `https://unpkg.com/@vue/runtime-dom@${version}/dist/runtime-dom.esm-browser.js`,
     showOutput = false,
     outputMode = 'preview'
   }: {
@@ -50,27 +73,21 @@ export class ReplStore implements Store {
     outputMode?: OutputModes | string
     defaultVueRuntimeURL?: string
   }) {
-    let files: StoreStateWithVantURL['files'] = {}
+    let files: StoreState['files'] = {}
 
     if (serializedState) {
       const saved = JSON.parse(atou(serializedState))
-      // eslint-disable-next-line no-restricted-syntax
+      console.log(Object.keys(saved))
       for (const filename of Object.keys(saved)) {
-        let codeContent = saved[filename]
-        // fix some error cdn url
-        if (filename === 'import-map.json') {
-          const json = JSON.parse(codeContent)
-          convertBugImportMapCdnUrl(json.imports)
-          codeContent = JSON.stringify(json, null, 2)
-        }
-
-        files[filename] = new File(filename, codeContent)
+        files[filename] = new File(filename, saved[filename])
       }
     } else {
       files = {
         [defaultMainFile]: new File(defaultMainFile, welcomeCode)
       }
     }
+
+    console.log(files)
 
     this.defaultVueRuntimeURL = defaultVueRuntimeURL
     this.initialShowOutput = showOutput
@@ -86,10 +103,13 @@ export class ReplStore implements Store {
       activeFile: files[mainFile],
       errors: [],
       vueRuntimeURL: this.defaultVueRuntimeURL,
-      vantURL: getVantURL()
-    })
+      fightingDesign: `${publicPath}es/index.mjs`
+    }) as unknown as StoreState
 
     this.initImportMap()
+
+    // varlet inject
+    this.state.files[varletReplPlugin] = new File(varletReplPlugin, varletReplPluginCode, !import.meta.env.DEV)
 
     watchEffect(() => compileFile(this, this.state.activeFile))
 
@@ -100,22 +120,30 @@ export class ReplStore implements Store {
     }
   }
 
-  setActive (filename: string) {
+  setActive = (filename: string): void => {
     this.state.activeFile = this.state.files[filename]
   }
 
-  addFile (fileOrFilename: string | File) {
+  // don't start compiling until the options are set
+  init = (): void => {
+    watchEffect(() => compileFile(this, this.state.activeFile))
+    for (const file in this.state.files) {
+      if (file !== defaultMainFile) {
+        compileFile(this, this.state.files[file])
+      }
+    }
+  }
+
+  addFile = (fileOrFilename: string | File): void => {
     const file = typeof fileOrFilename === 'string' ? new File(fileOrFilename) : fileOrFilename
     this.state.files[file.filename] = file
     if (!file.hidden) this.setActive(file.filename)
   }
 
-  deleteFile (filename: string) {
-    for (const file of additionalFiles) {
-      if (filename === file.filename && file.canDelete === false) {
-        alert(file.deleteTips || defaultDeleteTips)
-        return
-      }
+  deleteFile = (filename: string): void => {
+    if (filename === varletReplPlugin) {
+      alert('Varlet depends on this file')
+      return
     }
 
     if (confirm(`Are you sure you want to delete ${filename}?`)) {
@@ -126,11 +154,11 @@ export class ReplStore implements Store {
     }
   }
 
-  serialize () {
+  serialize = (): string => {
     return '#' + utoa(JSON.stringify(this.getFiles()))
   }
 
-  getFiles () {
+  getFiles = (): Record<string, string> => {
     const exported: Record<string, string> = {}
     for (const filename in this.state.files) {
       exported[filename] = this.state.files[filename].code
@@ -138,16 +166,14 @@ export class ReplStore implements Store {
     return exported
   }
 
-  async setFiles (newFiles: Record<string, string>, mainFile = defaultMainFile) {
+  setFiles = async (newFiles: Record<string, string>, mainFile = defaultMainFile): Promise<void> => {
     const files: Record<string, File> = {}
     if (mainFile === defaultMainFile && !newFiles[mainFile]) {
       files[mainFile] = new File(mainFile, welcomeCode)
     }
-    // eslint-disable-next-line no-restricted-syntax
     for (const [filename, file] of Object.entries(newFiles)) {
       files[filename] = new File(filename, file)
     }
-    // eslint-disable-next-line no-restricted-syntax
     for (const file of Object.values(files)) {
       await compileFile(this, file)
     }
@@ -157,8 +183,7 @@ export class ReplStore implements Store {
     this.setActive(mainFile)
   }
 
-  private initImportMap () {
-
+  private initImportMap = (): void => {
     const map = this.state.files['import-map.json']
     if (!map) {
       this.state.files['import-map.json'] = new File(
@@ -167,7 +192,7 @@ export class ReplStore implements Store {
           {
             imports: {
               vue: this.defaultVueRuntimeURL,
-              ...additionalImports
+              ...varletImports
             }
           },
           null,
@@ -177,70 +202,22 @@ export class ReplStore implements Store {
     } else {
       try {
         const json = JSON.parse(map.code)
-        convertBugImportMapCdnUrl(json.imports)
-
         if (!json.imports.vue) {
           json.imports.vue = this.defaultVueRuntimeURL
           map.code = JSON.stringify(json, null, 2)
         }
-      } catch (e) { }
+      } catch (err) {
+        console.log(err)
+      }
     }
-
-    // additionalFiles inject
-    additionalFiles.forEach(file => {
-      const { filename, code, hidden } = file
-      this.state.files[filename] = new File(vantInjectPlugin, code)
-      this.state.files[filename].hidden = !!hidden
-    })
   }
 
-  getImportMap () {
+  getImportMap = (): void | object => {
     try {
-      const codeJson = JSON.parse(this.state.files['import-map.json'].code)
-      convertBugImportMapCdnUrl(codeJson.imports)
-      return codeJson
+      return JSON.parse(this.state.files['import-map.json'].code)
     } catch (e) {
       this.state.errors = [`Syntax error in import-map.json: ${(e as Error).message}`]
       return {}
     }
-  }
-
-  setImportMap (map: {
-    imports: Record<string, string>
-    scopes?: Record<string, Record<string, string>>
-  }) {
-    this.state.files['import-map.json'].code = JSON.stringify(map, null, 2)
-  }
-
-  async setVueVersion (version: string) {
-    const compilerUrl = getVueCompilerURL(version)
-    const runtimeUrl = getVueRuntimeURL(version)
-    this.pendingCompiler = import(/* @vite-ignore */ compilerUrl)
-    this.compiler = await this.pendingCompiler
-    this.pendingCompiler = null
-    this.state.vueRuntimeURL = runtimeUrl
-    const importMap = this.getImportMap()
-      ; (importMap.imports || (importMap.imports = {})).vue = runtimeUrl
-    this.setImportMap(importMap)
-    console.info(`[@vue/repl] Now using Vue version: ${version}`)
-  }
-
-  resetVueVersion () {
-    this.compiler = defaultCompiler
-    this.state.vueRuntimeURL = this.defaultVueRuntimeURL
-  }
-
-  async setVantVersion (version: string) {
-    const vantUrl = getVantURL(version)
-
-    this.state.vantURL = vantUrl
-    const importMap = this.getImportMap()
-      ; (importMap.imports || (importMap.imports = {})).vant = vantUrl
-    this.setImportMap(importMap)
-    console.info(`[@vue/repl] Now using Vant version: ${version}`)
-  }
-
-  resetVantVersion () {
-    this.state.vantURL = getVantURL()
   }
 }

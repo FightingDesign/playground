@@ -1,16 +1,4 @@
-export const defaultCode = `
-<script setup>
-  import { ref } from 'vue'
-
-  const msg = ref('Hello World!')
-</script>
-
-<template>
-  <h1>{{ msg }}</h1>
-  <input v-model="msg">
-  <f-button>{{ msg }}</f-button>
-</template>
-`
+export const defaultCode = ''
 
 export const defaultFile = 'App.vue'
 
