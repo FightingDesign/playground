@@ -43,11 +43,17 @@ export const defaultCode = `
 
   install()
 
+  const value = ref(true)
   const msg = ref('Hello World！')
 </script>
 
 <template>
-  <h1>欢迎使用 Fighting Design！</h1>
-  <f-button type="primary">{{ msg }}</f-button>
+  <h2>🌈 欢迎使用 Fighting Design！</h2>
+
+  <f-space>
+    <f-button type="primary">{{ msg }}</f-button>
+    <f-button type="success" ripples>涟漪效果</f-button>
+    <f-button type="warning" ripples>点我试试</f-button>
+  </f-space>
 </template>
 `
