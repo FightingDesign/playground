@@ -23,11 +23,11 @@ pnpm dev
 
 ## 🐳 线上体验
 
-- https://tianyuhao.cn/playground
+https://tianyuhao.cn/playground
 
 ## 🙏 设计支持
 
-- [repl](https://github.com/vuejs/repl)
+[repl](https://github.com/vuejs/repl)
 
 ## 💬 执照
 
