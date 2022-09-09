@@ -1,5 +1,3 @@
-<script lang="ts" setup></script>
-
 <template>
   <header class="header">
     <f-link>
@@ -24,11 +22,7 @@
         </f-link>
       </li>
       <li class="option-item">
-        <f-link
-          href="https://staging-cn.vuejs.org/"
-          type="primary"
-          target="_blank"
-        >
+        <f-link href="https://cn.vuejs.org/" type="primary" target="_blank">
           Vue.js
         </f-link>
       </li>

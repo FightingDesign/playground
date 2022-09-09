@@ -2,6 +2,7 @@ import { reactive, watchEffect, version } from 'vue'
 import * as defaultCompiler from 'vue/compiler-sfc'
 import { compileFile, File } from '@vue/repl'
 import { utoa, atou } from '../utils/index'
+import { FMessage } from 'fighting-design'
 import { defaultMainFile, fightingPlugin, fightingPluginCode, defaultCode, fightingImports, publicPath } from '../utils/code'
 import type { Store, SFCOptions, StoreState, OutputModes } from '@vue/repl'
 
@@ -21,7 +22,6 @@ export class ReplStore implements Store {
   }: {
     serializedState?: string
     showOutput?: boolean
-    // loose type to allow getting from the URL without inducing a typing error
     outputMode?: OutputModes | string
     defaultVueRuntimeURL?: string
   }) {
@@ -29,7 +29,6 @@ export class ReplStore implements Store {
 
     if (serializedState) {
       const saved = JSON.parse(atou(serializedState))
-      console.log(Object.keys(saved))
       for (const filename of Object.keys(saved)) {
         files[filename] = new File(filename, saved[filename])
       }
@@ -43,7 +42,7 @@ export class ReplStore implements Store {
     this.initialShowOutput = showOutput
     this.initialOutputMode = outputMode as OutputModes
 
-    let mainFile = defaultMainFile
+    let mainFile: string = defaultMainFile
     if (!files[mainFile]) {
       mainFile = Object.keys(files)[0]
     }
@@ -58,7 +57,7 @@ export class ReplStore implements Store {
 
     this.initImportMap()
 
-    // varlet inject
+    // 注入 Fighting Design
     this.state.files[fightingPlugin] = new File(fightingPlugin, fightingPluginCode, !import.meta.env.DEV)
 
     watchEffect(() => compileFile(this, this.state.activeFile))
@@ -89,14 +88,19 @@ export class ReplStore implements Store {
     this.state.files[file.filename] = file
     if (!file.hidden) this.setActive(file.filename)
   }
-
+  /**
+   * 删除文件
+   * @param filename 文件名
+   * @returns 
+   */
   deleteFile = (filename: string): void => {
+    // 如果删除的 Fighting Design 的配置文件
     if (filename === fightingPlugin) {
-      alert('Varlet depends on this file')
+      FMessage.danger('Fighting Design 依赖于这个文件，请勿删除！')
       return
     }
-
-    if (confirm(`Are you sure you want to delete ${filename}?`)) {
+    // 提示框
+    if (confirm(`你确定删除 ${filename} 吗？`)) {
       if (this.state.activeFile.filename === filename) {
         this.state.activeFile = this.state.files[this.state.mainFile]
       }
