@@ -2,57 +2,8 @@ import { reactive, watchEffect, version } from 'vue'
 import * as defaultCompiler from 'vue/compiler-sfc'
 import { compileFile, File } from '@vue/repl'
 import { utoa, atou } from '../utils/index'
+import { defaultMainFile, fightingPlugin, fightingPluginCode, defaultCode, fightingImports, publicPath } from '../utils/code'
 import type { Store, SFCOptions, StoreState, OutputModes } from '@vue/repl'
-import { defaultMainFile } from '../utils/code'
-
-const publicPath = 'https://cdn.jsdelivr.net/npm/fighting-design/'
-
-// const defaultMainFile = 'App.vue'
-const varletReplPlugin = 'fighting-design-plugin.js'
-const varletImports = {
-  'fighting-design': `${publicPath}es/index.mjs`
-}
-const varletCss = `${publicPath}dist/index.css`
-
-const welcomeCode = `\
-<script setup lang='ts'>
-import { ref } from 'vue'
-import { installFightingDesign } from './${varletReplPlugin}'
-
-installFightingDesign()
-
-const msg = ref('Hello World！')
-</script>
-
-<template>
-  <h1>欢迎使用 Fighting Design！</h1>
-  <f-button type="primary">{{ msg }}</f-button>
-</template>
-`
-
-const varletReplPluginCode = `\
-import FightingDesign from 'fighting-design'
-
-import { getCurrentInstance } from 'vue'
-
-await appendStyle()
-
-export function installFightingDesign() {
-  const instance = getCurrentInstance()
-  instance.appContext.app.use(FightingDesign)
-}
-
-export function appendStyle() {
-  return new Promise((resolve, reject) => {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = '${varletCss}'
-    link.onload = resolve
-    link.onerror = reject
-    document.body.appendChild(link)
-  })
-}
-`
 
 export class ReplStore implements Store {
   state: StoreState
@@ -84,11 +35,9 @@ export class ReplStore implements Store {
       }
     } else {
       files = {
-        [defaultMainFile]: new File(defaultMainFile, welcomeCode)
+        [defaultMainFile]: new File(defaultMainFile, defaultCode)
       }
     }
-
-    console.log(files)
 
     this.defaultVueRuntimeURL = defaultVueRuntimeURL
     this.initialShowOutput = showOutput
@@ -110,7 +59,7 @@ export class ReplStore implements Store {
     this.initImportMap()
 
     // varlet inject
-    this.state.files[varletReplPlugin] = new File(varletReplPlugin, varletReplPluginCode, !import.meta.env.DEV)
+    this.state.files[fightingPlugin] = new File(fightingPlugin, fightingPluginCode, !import.meta.env.DEV)
 
     watchEffect(() => compileFile(this, this.state.activeFile))
 
@@ -142,7 +91,7 @@ export class ReplStore implements Store {
   }
 
   deleteFile = (filename: string): void => {
-    if (filename === varletReplPlugin) {
+    if (filename === fightingPlugin) {
       alert('Varlet depends on this file')
       return
     }
@@ -170,7 +119,7 @@ export class ReplStore implements Store {
   setFiles = async (newFiles: Record<string, string>, mainFile = defaultMainFile): Promise<void> => {
     const files: Record<string, File> = {}
     if (mainFile === defaultMainFile && !newFiles[mainFile]) {
-      files[mainFile] = new File(mainFile, welcomeCode)
+      files[mainFile] = new File(mainFile, defaultCode)
     }
     for (const [filename, file] of Object.entries(newFiles)) {
       files[filename] = new File(filename, file)
@@ -193,7 +142,7 @@ export class ReplStore implements Store {
           {
             imports: {
               vue: this.defaultVueRuntimeURL,
-              ...varletImports
+              ...fightingImports
             }
           },
           null,

@@ -6,13 +6,11 @@ export const utoa = (data: string): string => {
   return btoa(unescape(encodeURIComponent(data)))
 }
 
-export function atou (base64: string): string {
-  const binary = atob(base64)
-
-  // zlib header (x78), level 9 (xDA)
+export const atou = (base64: string): string => {
+  const binary: string = atob(base64)
   if (binary.startsWith('\x78\xDA')) {
-    const buffer = strToU8(binary, true)
-    const unzipped = unzlibSync(buffer)
+    const buffer: Uint8Array = strToU8(binary, true)
+    const unzipped: Uint8Array = unzlibSync(buffer)
     return strFromU8(unzipped)
   }
 
