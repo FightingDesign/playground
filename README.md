@@ -4,6 +4,10 @@
 
 `Fighting Design` 演练场，一个交互式解释器，完美支持 `Fighting Design`。
 
+## 🐳 线上体验
+
+https://tianyuhao.cn/playground
+
 ## ✨ 特性
 
 - 🚀 和 [fighting-design](https://github.com/FightingDesign/fighting-design) 完美融合
@@ -20,10 +24,6 @@ pnpm i
 
 pnpm dev
 ```
-
-## 🐳 线上体验
-
-https://tianyuhao.cn/playground
 
 ## 🙏 设计支持
 
