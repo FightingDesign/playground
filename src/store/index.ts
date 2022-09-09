@@ -1,12 +1,13 @@
 import { reactive, watchEffect, version } from 'vue'
 import * as defaultCompiler from 'vue/compiler-sfc'
-import type { Store, SFCOptions, StoreState, OutputModes } from '@vue/repl'
 import { compileFile, File } from '@vue/repl'
-import { utoa, atou } from '../_utils/utils'
+import { utoa, atou } from '../utils/index'
+import type { Store, SFCOptions, StoreState, OutputModes } from '@vue/repl'
+import { defaultMainFile } from '../utils/code'
 
 const publicPath = 'https://cdn.jsdelivr.net/npm/fighting-design/'
 
-const defaultMainFile = 'App.vue'
+// const defaultMainFile = 'App.vue'
 const varletReplPlugin = 'fighting-design-plugin.js'
 const varletImports = {
   'fighting-design': `${publicPath}es/index.mjs`

@@ -12,3 +12,8 @@ const install = (app) => {
   app.use(FightingDesign)
 }
 `
+// 默认入口文件名
+export const defaultMainFile = 'App.vue'
+
+// 
+export const varletReplPlugin = 'fighting.ts'
