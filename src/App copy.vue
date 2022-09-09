@@ -108,10 +108,6 @@ button {
 
   const importMap = {
     imports: {
-      // cdn link to esm build of myLib
-      // myLib: 'https://cdn.jsdelivr.net/npm/fighting-design/dist/index.umd.js'
-      // myLib:
-      //   'https://cdn.jsdelivr.net/npm/fighting-design@0.6.4-alpha.5/es/index.mjs'
       'fighting-design':
         'https://cdn.jsdelivr.net/npm/fighting-design@0.6.4-alpha.5/es/index.mjs',
       'fighting-design-theme':
