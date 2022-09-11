@@ -17,12 +17,14 @@ import FightingDesign from 'fighting-design'
 import { getCurrentInstance } from 'vue'
 import type { ComponentInternalInstance } from 'vue'
 
-export const install = () => {
+await appendStyle()
+
+export function install () {
   const instance = getCurrentInstance() as ComponentInternalInstance
   instance.appContext.app.use(FightingDesign)
 }
 
-const appendStyle = () => {
+function appendStyle () {
   return new Promise((resolve, reject) => {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -32,8 +34,6 @@ const appendStyle = () => {
     document.body.appendChild(link)
   })
 }
-
-await appendStyle()
 `
 
 export const defaultCode = `

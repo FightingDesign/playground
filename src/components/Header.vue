@@ -1,13 +1,16 @@
 <template>
   <header class="header">
-    <f-link>
+    <f-link
+      href="https://github.com/FightingDesign/fighting-design"
+      target="_blank"
+    >
       <div class="logo">
         <f-avatar
           round
           size="mini"
           src="https://tianyuhao.cn/images/fighting-design/FightingDesign.svg"
         />
-        <span class="name">Fighting Design Playground</span>
+        <span class="name">Playground</span>
       </div>
     </f-link>
 
@@ -61,6 +64,7 @@
         height: 18px;
         margin-left: 10px;
         font-weight: bold;
+        font-size: 17px;
         background: -webkit-linear-gradient(
           55deg,
           rgb(57, 92, 227) 10%,
@@ -76,6 +80,7 @@
       justify-content: space-around;
       align-items: center;
       .option-item {
+        white-space: nowrap;
         list-style: none;
         margin: 0 10px;
         cursor: pointer;
