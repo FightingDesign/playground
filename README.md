@@ -1,5 +1,9 @@
 # Playground
 
+## 🚨 重要说明
+
+该仓库已不再维护，项目迁移至 [fighting-playground](https://github.com/FightingDesign/fighting-design/tree/master/packages/fighting-playground)
+
 ## 🤟 介绍
 
 `Fighting Design` 演练场，一个交互式解释器，完美支持 `Fighting Design`。
