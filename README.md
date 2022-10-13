@@ -10,7 +10,7 @@
 
 ## 🐳 线上体验
 
-https://tianyuhao.cn/playground
+https://sfc.tianyuhao.cn
 
 ## ✨ 特性
 
